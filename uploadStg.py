@@ -1,4 +1,4 @@
-from dao import get,set,set_batch
+from dao import set,set_batch
 import pandas as pd
 
 sql_drop = """drop table if exists stg.campeonatoBrasileiroFull"""
