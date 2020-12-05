@@ -42,20 +42,20 @@ def aDataUp(dataFrameStg,DataFrameDim):
     if dataFrameIsNotEmpty(DataFrameDim) and dataFrameIsNotEmpty(dataFrameStg):
         #stg_data['clube'].isin(dim_data['clube'])
         #teste =  stg_data.isin({'clube':dim_data['clube']})
-        stg_merge = dataFrameStg.merge(DataFrameDim.drop_duplicates(),on=['clube'],how='left',indicator=True)
-        stg_merge = stg_merge.drop_duplicates('clube')
+        stg_merge = dataFrameStg.merge(DataFrameDim.drop_duplicates(),on=['clube','arena'],how='left',indicator=True)
+        stg_merge = stg_merge.drop_duplicates('sk_id')
         stg_merge.loc[(stg_merge._merge == 'both') & (stg_merge.estado_x != stg_merge.estado_y),'up-ins'] = 'up'
-        stg_merge = stg_merge[['up-ins','sk_id','clube','estado_x']]
+        stg_merge = stg_merge[['up-ins','sk_id','clube','estado_x','arena']]
         stg_merge = stg_merge.rename(columns={'estado_x':'estado'})
         filter_up = stg_merge['up-ins'] == 'up'
         return stg_merge[filter_up]
 
 def aDataInst(dataFrameStg,DataFrameDim):
     if dataFrameIsNotEmpty(DataFrameDim) and dataFrameIsNotEmpty(dataFrameStg):
-        stg_merge = dataFrameStg.merge(DataFrameDim.drop_duplicates(),on=['clube'],how='left',indicator=True)
-        stg_merge = stg_merge.drop_duplicates('clube')
+        stg_merge = dataFrameStg.merge(DataFrameDim.drop_duplicates({'clube','arena'}),on=['clube','arena'],how='left',indicator=True)
+        stg_merge = stg_merge.drop_duplicates({'clube','arena'})
         stg_merge.loc[(stg_merge._merge != 'both'),'up-ins'] = 'ins'
-        stg_merge = stg_merge[['up-ins','clube','estado_x']]
+        stg_merge = stg_merge[['up-ins','clube','estado_x','arena']]
         stg_merge = stg_merge.rename(columns={'estado_x':'estado'})
         filter_in = stg_merge['up-ins'] == 'ins'
         return stg_merge[filter_in]
@@ -70,8 +70,8 @@ def createTmp(dataFrame,tmp):
     set(create)
 
 
-sql_stg = """select  distinct clube1,clube1estado  from stg.campeonatoBrasileiroFull"""
-sql_dim = """select sk_id, clube, estado from dw.dim_time where fleg = 'Y'"""
+sql_stg = """select  distinct clube1,clube1estado, arena  from stg.campeonatoBrasileiroFull"""
+sql_dim = """select sk_id, clube, estado,arena from dw.dim_arena where fleg = 'Y'"""
 
 
 stg_data = getSql(sql_stg)
@@ -80,17 +80,21 @@ dim_data = getSql(sql_dim)
 
 
 stg_data =  pd.DataFrame(stg_data)
-stg_data = stg_data.rename(columns={0:'clube',1:'estado'})
+stg_data = stg_data.rename(columns={0:'clube',1:'estado',2:'arena'})
 dim_data = pd.DataFrame(dim_data)
-dim_data = dim_data.rename(columns={0:'sk_id',1:'clube',2:'estado'})
+dim_data = dim_data.rename(columns={0:'sk_id',1:'clube',2:'estado',3:'arena'})
 
 
 if  dataFrameIsNotEmpty(dim_data):
     dim_data['clube'] = dim_data['clube'].str.upper()
+    dim_data['arena'] = dim_data['arena'].str.upper()
+    dim_data['estado'] = dim_data['estado'].str.upper()
+
 if dataFrameIsNotEmpty(stg_data):
     stg_data['clube'] = stg_data['clube'].str.upper()
+    stg_data['arena'] = stg_data['arena'].str.upper()
     stg_data['estado'] = stg_data['estado'].str.upper()
-stg_data = stg_data.drop_duplicates({'estado','clube'})
+stg_data = stg_data.sort_values(['clube','arena']).drop_duplicates(subset=['clube','arena'], keep='last')
 stg_data.insert(0,'up-ins',None)
 
 
@@ -98,14 +102,13 @@ base_insert = aDataInst(stg_data,dim_data)
 if dataFrameIsNotEmpty(base_insert):
     base_insert = dataInst(base_insert)
     base_insert = base_insert.drop(columns=['up-ins'])
-    insert(base_insert,"dw.dim_time") 
-
+    insert(base_insert,"dw.dim_arena") 
 
 
 base_upDate = aDataUp(stg_data,dim_data)
 if dataFrameIsNotEmpty(base_upDate):
     base_upDate = dataUpDate(base_upDate)
     base_upDate = base_upDate.drop(columns=['up-ins'])
-    createTmp(base_upDate,'stg.dimTimeStg')
-    insert(base_upDate,'stg.dimTimeStg')
-    set("UPDATE dw.dim_time SET estado = tmp.estado FROM stg.dimTimeStg as tmp WHERE CAST(dim_time.sk_id AS INT) = CAST(tmp.sk_id AS INT); drop table stg.dimTimeStg;")
+    createTmp(base_upDate,'stg.dimArenaStg')
+    insert(base_upDate,'stg.dimArenaStg')
+    set("UPDATE dw.dim_Arena SET estado = tmp.estado FROM stg.dimArenaStg as tmp WHERE CAST(dim_arena.sk_id AS INT) = CAST(tmp.sk_id AS INT); drop table stg.dimArenaStg;")

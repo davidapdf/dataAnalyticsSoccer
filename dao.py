@@ -44,11 +44,3 @@ def set_batch(sql_string,dataFrame):
     psycopg2.extras.execute_batch(cur,sql_string,dataFrame)
     conn.commit()
     cur.close()
-
-def set_update(sql_string,dataFrame):
-    params = config()
-    conn = psycopg2.connect(**params)
-    cur = conn.cursor()
-    cur.executemany*(sql_string)
-    conn.commit()
-    cur.close()

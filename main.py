@@ -1,1 +1,2 @@
 
+import dimArena,dimEstado,dimTime
