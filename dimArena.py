@@ -71,15 +71,22 @@ def createTmp(dataFrame,tmp):
 
 
 sql_stg = """select  distinct clube1,clube1estado, arena  from stg.campeonatoBrasileiroFull"""
+sql_stg2 = """select distinct clube2,clube2estado, arena  from stg.campeonatoBrasileiroFull"""
 sql_dim = """select sk_id, clube, estado,arena from dw.dim_arena where fleg = 'Y'"""
 
 
 stg_data = getSql(sql_stg)
+stg_data2 = getSql(sql_stg2)
 dim_data = getSql(sql_dim)
 
+df1 = pd.DataFrame(stg_data)
+df2 = pd.DataFrame(stg_data2)
+frames = [df1,df2]
 
 
-stg_data =  pd.DataFrame(stg_data)
+stg_data =  pd.concat(frames)
+
+
 stg_data = stg_data.rename(columns={0:'clube',1:'estado',2:'arena'})
 dim_data = pd.DataFrame(dim_data)
 dim_data = dim_data.rename(columns={0:'sk_id',1:'clube',2:'estado',3:'arena'})
