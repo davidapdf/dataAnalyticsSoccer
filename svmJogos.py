@@ -18,7 +18,8 @@ case
 	end as statuspartida,
     sum(qtd_gols) as qtd_gols,
     sum(qtd_gols_sofridos) as qtd_gols_sofridos,
-    sk_time
+    sk_time,
+    count(*) as quantidade_partidas
 from   dw.f_jogos 
 group by 
 case when lugar = 'Fora de casa' then 2 else 1 end,
@@ -33,7 +34,7 @@ case
 matriz_data = getSql(sql_string)
 
 data_avaliacao = pd.DataFrame(matriz_data)
-data_avaliacao = data_avaliacao.rename(columns={0:'lugar',1:'statuspartida',2:'qtd_gols',3:'qtd_gols_sofridos',4:'sk_time'})
+data_avaliacao = data_avaliacao.rename(columns={0:'lugar',1:'statuspartida',2:'qtd_gols',3:'qtd_gols_sofridos',4:'sk_time',5:'quantidade_partidas'})
 
 sns.pairplot(data_avaliacao,hue='statuspartida')
 from sklearn import svm
