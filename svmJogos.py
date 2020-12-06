@@ -48,7 +48,13 @@ clf = svm.SVC(C=1.0)
 clf.fit(X_train,y_train)
 
 clf.predict(X_test)
+y_pred = clf.predict(X_test)
+print("a acurácia é: {}".format(clf.score(X_test,y_test)))
 
-clf.score(X_test,y_test)
+from sklearn.metrics import classification_report
+print(classification_report(y_test,y_pred))
+
+
+
 
 # %%
