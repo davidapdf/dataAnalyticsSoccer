@@ -5,6 +5,7 @@ create table if not exists dw.f_jogos (
 	sk_time integer not null, 
 	rodada varchar(30), 
 	lugar varchar(30), 
+	ano_campeonato char(4),
 	statuspartida varchar(30),
 	qtd_gols integer,
 	qtd_gols_sofridos integer,
@@ -94,6 +95,7 @@ sk_estado,
 sk_time,
 rodada,
 lugar,
+ano_campeonato,
 statuspartida,
 qtd_gols,
 qtd_gols_sofridos,
@@ -107,6 +109,7 @@ estado.sk_id as sk_estado, --Normal Dimension
 time.sk_id as sk_time, --Normal Dimension
 tb_full.rodada as rodada,--Stacked dimension
 tb_full.lugar as lugar, --Stacked dimension
+data_ant as ano_campeonato, --Stacked dimension
 tb_full.statuspartida as statuspartida, --result of fact 
 tb_full.qtd_gols as qtd_gols, --result of fact 
 tb_full.qtd_gols_sofridos as qtd_gols_sofridos, --result of fact 
@@ -117,3 +120,5 @@ inner join dw.dim_tempo as tempo on (tb_full.data = tempo.date_atual)
 inner join dw.dim_arena as arena on (tb_full.clube = arena.clube and tb_full.arena = arena.arena)
 inner join dw.dim_estado as estado on (estado.clube = tb_full.clube and estado.estado = tb_full.estado)
 inner join dw.dim_time as time on (time.clube = tb_full.clube);
+
+
