@@ -1,5 +1,6 @@
 # dataAnalyticsSoccer
-E necessario criar os schemas e as sequence do banco
-create schema stg
-create schema dw
-create sequence dw.sq_dim_time_id
+Necessário criar os schemas stg e dw
+Necessário criar as tabelas rodar os creates da query_create_tables
+O arquivo limpa_base.py server para limpar as bases caso necessário
+Instalar o paconte env https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+Executar o main.py
